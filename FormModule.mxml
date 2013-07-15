@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:mx="http://www.adobe.com/2006/mxml" implements="IExpenseForm"
+	layout="absolute"
+	percentWidth="100" percentHeight="100">
+	
+	<mx:Metadata>
+		[Event(type="addItem",type="SampleEvent")]
+	</mx:Metadata>
+	
+	<mx:Form horizontalCenter="0" verticalCenter="0">
+		<mx:FormItem label="Month:">
+			<mx:TextInput id="month" />
+		</mx:FormItem>
+		<mx:FormItem label="Profit:">
+			<mx:TextInput id="profit" />
+		</mx:FormItem>
+		<mx:FormItem label="Expenses:">
+			<mx:TextInput id="expenses" />
+		</mx:FormItem>
+		<mx:FormItem>
+			<mx:Button label="Submit" click="submit()" />
+		</mx:FormItem>
+	</mx:Form>
+	
+	<mx:Script>
+	<![CDATA[
+		
+		/**
+		 * submit
+		 *
+		 * This function takes the information from the form and creates a new
+		 * SampleEvent with that data and dispatches it.
+		 */
+		private function submit() : void
+		{
+			var event:SampleEvent = new SampleEvent(SampleEvent.ADD_ITEM);
+			event.item = {Month:month.text, Profit:profit.text, Expenses:expenses.text};
+			dispatchEvent( event );
+		}
+	]]>
+	</mx:Script>
+	<mx:Text x="66" y="28" text="Data entered on this form will appear in the Chart and Table." width="269"/>
+	
+</mx:Module>

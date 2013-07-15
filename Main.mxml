@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute">
+
+	<!--
+		Main - or shell - application that loads the modules. In this example the modules
+		are loaded here at the top level, but they do not have to be (and more likely, won't be)
+		and can be within any component. Likewise, a module can load other modules.
+		
+		This application shows how to switch between modules. Each module has a corresponding
+		radio button. Selecting a button loads its corresponding module; selecting 'none' simply
+		unloads the module.
+		
+		Also demonstrated here are techniques to communicate with moodules using interfaces 
+		(see IExpenseReport.as) and events (see SampleEvent.as).
+	-->
+	<mx:Script>
+    <![CDATA[
+    	import mx.managers.SystemManager;
+    	import mx.events.ModuleEvent;
+        import mx.modules.*;
+        import mx.collections.ArrayCollection;
+        
+        [Bindable] private var moduleName:String = "<none>";
+
+		/**
+		 * loadModule
+		 *
+		 * This function is called to load a module into the ModuleLoader space
+		 * defined by the ModuleLoader tag called currentModule. Setting the
+		 * url property to the module's SWF causes the module to be fetched and
+		 * loaded.
+		 */
+        public function loadModule(s:String):void {
+        	// setting the url triggers the module to load
+            currentModule.url = s;
+            moduleName = s;
+        }
+        
+        /**
+         * removeModule
+         *
+         * This function demontrates how to unload a module without loading a
+         * new one in its place: set the ModuleLoader.url to null!
+         */
+        public function removeModule():void {
+        	// setting the url to null causes the module to unload
+	        currentModule.url = null;
+	        moduleName = "<none>";
+        }
+        
+        /**
+         * readyModule
+         *
+         * This function is an event handler for the ready event of the ModuleLoader.
+         * The ready event is dispatched when enough of the module's SWF has been
+         * downloaded to be useful.
+         */
+        private function readyModule( event:ModuleEvent ) : void
+        {        	
+        	var ml:ModuleLoader = event.target as ModuleLoader;
+        	
+        	/* cast the module (the child proeprty of the ModuleLoader) to the
+        	 * IExpenseReport interface. If the child implements this interface 
+        	 * ichild will not be null. In that case the expenses collection
+        	 * is passed to it (the expenses setter is part of the IExpenseReport
+        	 * definition) and event handlers are assigned.
+        	 */
+        	var ichild:* = ml.child as IExpenseReport;
+        	if( ichild != null ) {
+        		ichild.expenseReport = expenses;
+        		ichild.addEventListener( SampleEvent.SWITCH_MODULE, showTableOrChart );
+        	}
+        	else {
+        	/* cast the module to the IExpenseForm interface. If the child implements
+        	 * this interface, then add an event handler for the ADD_ITEM event.
+        	 */
+        		ichild = ml.child as IExpenseForm;
+        		if( ichild != null ) {
+        			ichild.addEventListener( SampleEvent.ADD_ITEM, addItemToExpenses );
+        		}
+        	}
+        }
+        
+        /**
+         * showTableOrChart
+         *
+         * This function handles the SWITCH_MODULE event from a module. Both the
+         * chart and table modules dispatch this event. You can use this as a demontration
+         * of passing information from one module to another via their mutual parent.
+         */
+        private function showTableOrChart( event:SampleEvent ) : void
+        {
+        	if( event.module == SampleEvent.TABLE_MODULE ) {
+	        	loadModule("GridModule.swf");
+	        	tableButton.selected = true;
+	        } else {
+	        	loadModule("ChartModule.swf");
+	        	chartButton.selected = true;
+	        }
+        }
+        
+        /**
+         * addItemToExpenses
+         *
+         * This function handles the ADD_ITEM event from the Form module. A record
+         * of information is passed as part of the event and that is added to the
+         * expenses collection.
+         */
+        private function addItemToExpenses( event:SampleEvent ) : void
+        {
+        	expenses.addItem( event.item );
+        	removeModule();
+        	noneButton.selected = true;
+        }
+        
+        
+        [Bindable]
+        public var expenses:ArrayCollection = new ArrayCollection([
+            {Month:"Jan", Profit:2000, Expenses:1500},
+            {Month:"Feb", Profit:1000, Expenses:200},
+            {Month:"Mar", Profit:1500, Expenses:500}
+        ]);
+    ]]>
+    </mx:Script>
+    
+	<mx:Panel x="10" y="41" width="169" height="500" layout="absolute" title="Modules">
+		<mx:Text x="10" y="24" text="Check a module to load it; uncheck to unload it" width="129"/>
+		<mx:RadioButton id="noneButton" x="10" y="97" label="None" selected="true" value="0"
+			click="removeModule()"/>
+		<mx:RadioButton id="chartButton" x="10" y="123" label="Chart" value="1"
+			click="loadModule('ChartModule.swf')"/>
+		<mx:RadioButton x="10" y="149" label="Form" value="2"
+			click="loadModule('FormModule.swf')"/>
+		<mx:RadioButton id="tableButton" x="10" y="175" label="Table" value="3"
+			click="loadModule('GridModule.swf')"/>
+	</mx:Panel>
+	
+	<!-- the panel contains the ModuleLoader. The readyEvent is handled by the readyModule() function
+	     in the Script block. You can have as many ModuleLoaders as you see fit; this just demonstrates
+	     how a single ModuleLoader can be used to load and unload
+	 -->
+	<mx:Panel x="187" y="41" width="500" height="500" layout="absolute" title="Module: {moduleName}">
+		<mx:ModuleLoader id="currentModule" ready="readyModule(event)"
+			width="100%" height="100%" />
+	</mx:Panel>
+
+</mx:Application>

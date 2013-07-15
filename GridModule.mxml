@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Module xmlns:mx="http://www.adobe.com/2006/mxml" implements="IExpenseReport"
+	layout="absolute"
+	percentWidth="100" percentHeight="100">
+
+	<mx:Metadata>
+		[Event(type="showChart",type="SampleEvent")]
+	</mx:Metadata>
+	
+	<mx:Script><![CDATA[
+		import mx.events.ResizeEvent;
+        import mx.collections.ArrayCollection;
+        [Bindable]
+        public var expenses:ArrayCollection;
+        
+        /**
+         * expenseReport
+         *
+         * This set function implments the IExpenseReport
+         */
+        public function set expenseReport( ac:ArrayCollection ) : void
+        {
+        	expenses = ac;
+        }
+        
+        /**
+         * showChart
+         *
+         * This function dispatches a SampleEvent to indicate that the ChartModule should
+         * be loaded.
+         */
+        private function showChart() : void
+        {
+        	dispatchEvent( new SampleEvent(SampleEvent.SWITCH_MODULE,SampleEvent.CHART_MODULE) );
+        }
+    ]]></mx:Script>
+
+	<mx:DataGrid dataProvider="{expenses}" height="227" width="277" horizontalCenter="0" verticalCenter="-10.5">
+		<mx:columns>
+			<mx:DataGridColumn headerText="Month" dataField="Month"/>
+			<mx:DataGridColumn headerText="Profit" dataField="Profit"/>
+			<mx:DataGridColumn headerText="Expenses" dataField="Expenses"/>
+		</mx:columns>
+	</mx:DataGrid>
+	<mx:Button label="Chart" right="10" bottom="10" click="showChart()"/>
+	
+</mx:Module>
